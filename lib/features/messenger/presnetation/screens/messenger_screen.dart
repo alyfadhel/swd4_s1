@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:swd4_s1/build_chat.dart';
-import 'package:swd4_s1/build_story.dart';
-import 'package:swd4_s1/messenger_model.dart';
+import 'package:swd4_s1/features/messenger/presnetation/widgets/build_chat.dart';
+import 'package:swd4_s1/features/messenger/presnetation/widgets/build_story.dart';
+import 'package:swd4_s1/features/messenger/data/model/messenger_model.dart';
 
 class MessengerScreen extends StatelessWidget {
   const MessengerScreen({super.key});

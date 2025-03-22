@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:swd4_s1/messenger_model.dart';
+import 'package:swd4_s1/features/messenger/data/model/messenger_model.dart';
 
 class BuildChat extends StatelessWidget {
   final MessengerModel model;
