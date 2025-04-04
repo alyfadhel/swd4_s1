@@ -1,144 +1,169 @@
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:swd4_s1/features/todo/archive/archive_screen.dart';
-import 'package:swd4_s1/features/todo/done/done_screen.dart';
-import 'package:swd4_s1/features/todo/new/new_screen.dart';
-import 'package:path/path.dart' as p;
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:swd4_s1/core/layout/todo/controller/cubit/cubit.dart';
+import 'package:swd4_s1/core/layout/todo/controller/cubit/state.dart';
+import 'package:swd4_s1/core/shared/widgets/my_from_field.dart';
 
-class TodoApp extends StatefulWidget {
+class TodoApp extends StatelessWidget {
   const TodoApp({super.key});
 
   @override
-  State<TodoApp> createState() => _TodoAppState();
-}
-
-Database? database;
-List<BottomNavigationBarItem> items = [
-  BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'New'),
-  BottomNavigationBarItem(icon: Icon(Icons.check_box), label: 'Done'),
-  BottomNavigationBarItem(icon: Icon(Icons.archive), label: 'Archived'),
-];
-int currentIndex = 0;
-List<Widget> screens = [NewScreen(), DoneScreen(), ArchiveScreen()];
-List<String> titles = ['New', 'Done', 'Archive'];
-var scaffoldKey = GlobalKey<ScaffoldState>();
-bool isBottomShow = false;
-IconData fabIcon = Icons.edit;
-
-class _TodoAppState extends State<TodoApp> {
-  @override
-  void initState() {
-    createDataFromDatabase();
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: scaffoldKey,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.blue,
-        title: Text(
-          titles[currentIndex],
-          style: TextStyle(
-            fontSize: 25.0,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: items,
-        currentIndex: currentIndex,
-        onTap: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (isBottomShow) {
+    return BlocProvider(
+      create: (BuildContext context) => AppCubit()..createDataFromDatabase(),
+      child: BlocConsumer<AppCubit, AppStates>(
+        listener: (context, state) {
+          if(state is AppInsertDataFromDatabaseState){
             Navigator.pop(context);
-            setState(() {
-              isBottomShow = false;
-              fabIcon = Icons.edit;
-            });
-          } else {
-            scaffoldKey.currentState!
-                .showBottomSheet(
-                  (context) => Container(height: 150.0, color: Colors.red),
-                )
-                .closed
-                .then((value) {
-                  setState(() {
-                    isBottomShow = false;
-                    fabIcon = Icons.edit;
-                  });
-            });
-            setState(() {
-              isBottomShow = true;
-              fabIcon = Icons.add;
-            });
           }
         },
-        backgroundColor: Colors.blue,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
-        ),
-        child: Icon(fabIcon, color: Colors.white),
+        builder: (context, state) {
+          var cubit = AppCubit.get(context);
+          return Scaffold(
+            key: cubit.scaffoldKey,
+            appBar: AppBar(
+              titleSpacing: 20.0,
+              automaticallyImplyLeading: false,
+              backgroundColor: Colors.blue,
+              title: Text(
+                cubit.titles[cubit.currentIndex],
+                style: TextStyle(
+                  fontSize: 25.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            bottomNavigationBar: BottomNavigationBar(
+              items: cubit.items,
+              currentIndex: cubit.currentIndex,
+              onTap: (index) {
+                cubit.changeBottomNav(index);
+              },
+              selectedItemColor: Colors.blue,
+              unselectedItemColor: Colors.grey,
+              type: BottomNavigationBarType.fixed,
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                if (cubit.isBottomShow) {
+                  if (cubit.formKey.currentState!.validate()) {
+                    cubit.insertDataFromDatabase(
+                      title: cubit.titleController.text,
+                      date: cubit.dateController.text,
+                      time: cubit.timeController.text,
+                    );
+                    cubit.changeFabIcon(isShow: false, icon: Icons.edit);
+                  }
+                } else {
+                  cubit.scaffoldKey.currentState!
+                      .showBottomSheet(
+                        (context) => Container(
+                          padding: EdgeInsets.all(20.0),
+                          color: Colors.grey[300],
+                          child: Form(
+                            key: cubit.formKey,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                MyFromField(
+                                  controller: cubit.titleController,
+                                  type: TextInputType.text,
+                                  prefix: Icons.title,
+                                  text: 'title',
+                                  radius: 10.0,
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return 'Title must be not empty';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                SizedBox(height: 20.0),
+                                MyFromField(
+                                  controller: cubit.dateController,
+                                  type: TextInputType.datetime,
+                                  prefix: Icons.calendar_today,
+                                  text: 'date',
+                                  radius: 10.0,
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return 'Date must be not empty';
+                                    }
+                                    return null;
+                                  },
+                                  onTap: () {
+                                    FocusScope.of(
+                                      context,
+                                    ).requestFocus(FocusNode());
+                                    showDatePicker(
+                                      context: context,
+                                      firstDate: DateTime.now(),
+                                      lastDate: DateTime.parse('2025-12-31'),
+                                    ).then((value) {
+                                      if (value != null) {
+                                        cubit.dateController.text =
+                                            DateFormat.yMMMd().format(value);
+                                        debugPrint(
+                                          DateFormat.yMMMd().format(value),
+                                        );
+                                      }
+                                    });
+                                  },
+                                ),
+                                SizedBox(height: 20.0),
+                                MyFromField(
+                                  controller: cubit.timeController,
+                                  type: TextInputType.datetime,
+                                  prefix: Icons.watch_later_outlined,
+                                  text: 'time',
+                                  radius: 10.0,
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return 'Time must be not empty';
+                                    }
+                                    return null;
+                                  },
+                                  onTap: () {
+                                    FocusScope.of(
+                                      context,
+                                    ).requestFocus(FocusNode());
+                                    showTimePicker(
+                                      context: context,
+                                      initialTime: TimeOfDay.now(),
+                                    ).then((value) {
+                                      if (value != null) {
+                                        if (context.mounted) {
+                                          cubit.timeController.text = value
+                                              .format(context);
+                                        }
+                                      }
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                      .closed
+                      .then((value) {
+                        cubit.changeFabIcon(isShow: false, icon: Icons.edit);
+                      });
+                  cubit.changeFabIcon(isShow: true, icon: Icons.add);
+                }
+              },
+              backgroundColor: Colors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              child: Icon(cubit.fabIcon, color: Colors.white),
+            ),
+            body: cubit.screens[cubit.currentIndex],
+          );
+        },
       ),
-      body: screens[currentIndex],
     );
   }
-}
-
-void createDataFromDatabase() async {
-  var databasesPath = await getDatabasesPath();
-  String path = p.join(databasesPath, 'tasks.db');
-  openDataFromDatabase(path: path);
-}
-
-void openDataFromDatabase({required String path}) async {
-  await openDatabase(
-    path,
-    version: 1,
-    onCreate: (Database database, int version) async {
-      debugPrint('Database created');
-      await database
-          .execute(
-            'CREATE TABLE tasks (id INTEGER PRIMARY KEY, title TEXT, date TEXT, time TEXT, status TEXT)',
-          )
-          .then((value) {
-            debugPrint('Table created');
-          })
-          .catchError((error) {
-            debugPrint('Error When Table Opened ${error.toString()}');
-          });
-    },
-    onOpen: (database) {
-      debugPrint('Database opened');
-    },
-  ).then((value) {
-    database = value;
-  });
-}
-
-void insertDataFromDatabase() async {
-  await database!.transaction((txn) async {
-    txn
-        .rawInsert(
-          'INSERT INTO tasks(title, date, time, status) VALUES("some name", "1234", "456", "new")',
-        )
-        .then((value) {
-          debugPrint('$value inserted Successfully');
-        })
-        .catchError((error) {
-          debugPrint('Error when insert new record ${error.toString()}');
-        });
-  });
 }
