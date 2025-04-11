@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:swd4_s1/core/shared/themes/controller/cubit.dart';
 
 class MyFromField extends StatelessWidget {
   final TextEditingController controller;
@@ -56,12 +57,15 @@ class MyFromField extends StatelessWidget {
             color: background,
           ),
         ),
-        prefixIcon: Icon(prefix,),
+        prefixIcon: Icon(prefix,
+        color: ThemeModeCubit.get(context).isDark ? Colors.black : Colors.white,),
         suffixIcon: suffix != null ?
         IconButton(onPressed: onSuffixPressed,icon: Icon(suffix))
             : null,
         labelText: isUppercase ? text.toUpperCase() : text,
-
+        labelStyle: TextStyle(
+          color: ThemeModeCubit.get(context).isDark ? Colors.black : Colors.white,
+        ),
       ),
     );
   }

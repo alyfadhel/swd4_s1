@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:swd4_s1/core/layout/news_app/controller/cubit.dart';
 import 'package:swd4_s1/core/layout/news_app/controller/state.dart';
+import 'package:swd4_s1/core/shared/widgets/news_widgets/build_article_item.dart';
 import 'package:swd4_s1/features/news/business/presntation/screens/business_screen.dart';
 
 class SportsScreen extends StatelessWidget {
@@ -15,26 +16,7 @@ class SportsScreen extends StatelessWidget {
       listener: (context, state) {},
       builder: (context, state) {
         var article = NewsCubit.get(context).sports;
-        return ConditionalBuilder(
-          condition: state is! NewsGetSportsLoadingState,
-          builder:
-              (context) => ListView.separated(
-            physics: BouncingScrollPhysics(),
-            itemBuilder:
-                (context, index) => buildArticle(context, article[index]),
-            separatorBuilder:
-                (context, index) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15.0),
-              child: Divider(
-                height: 1.0,
-                color: Colors.grey,
-                thickness: 1.5,
-              ),
-            ),
-            itemCount: article.length,
-          ),
-          fallback: (context) => Center(child: CircularProgressIndicator()),
-        );
+        return BuildArticleItem(article: article);
       },
     );
   }

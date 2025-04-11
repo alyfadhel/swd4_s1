@@ -40,6 +40,9 @@ class NewsCubit extends Cubit<NewsStates>
   List<dynamic>business = [];
   List<dynamic>sports = [];
   List<dynamic>science = [];
+  List<dynamic>search = [];
+
+  var searchController = TextEditingController();
 
   void getBusiness()
   {
@@ -106,6 +109,28 @@ class NewsCubit extends Cubit<NewsStates>
     },
     ).catchError((error){
       emit(NewsGetScienceErrorState(error.toString()));
+      debugPrint(error.toString());
+    });
+  }
+
+  void getSearch(String value)
+  {
+    emit(NewsGetSearchLoadingState());
+    NewsHelper.getData(
+      url: 'v2/top-headlines',
+      query:
+      {
+        'apiKey' : 'c799708afa624ae3b9742682fb271251',
+        'q' : value,
+      },
+    )
+        .then((value){
+      search = value.data['articles'];
+      debugPrint('The Search is: ${value.data['articles']}');
+      emit(NewsGetSearchSuccessState());
+    },
+    ).catchError((error){
+      emit(NewsGetSearchErrorState(error.toString()));
       debugPrint(error.toString());
     });
   }

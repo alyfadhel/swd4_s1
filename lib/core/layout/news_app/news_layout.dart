@@ -4,6 +4,7 @@ import 'package:swd4_s1/core/layout/news_app/controller/cubit.dart';
 import 'package:swd4_s1/core/layout/news_app/controller/state.dart';
 import 'package:swd4_s1/core/shared/themes/controller/cubit.dart';
 import 'package:swd4_s1/core/shared/themes/controller/state.dart';
+import 'package:swd4_s1/features/news/search/presentation/screens/search_screen.dart';
 
 class NewsLayout extends StatelessWidget {
   const NewsLayout({super.key});
@@ -11,33 +12,34 @@ class NewsLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<NewsCubit, NewsStates>(
-      listener: (context, state) {
-
-      },
+      listener: (context, state) {},
       builder: (context, state) {
         var cubit = NewsCubit.get(context);
         return Scaffold(
           appBar: AppBar(
-            title: Text(
-              cubit.titles[cubit.currentIndex],
-            ),
+            title: Text(cubit.titles[cubit.currentIndex]),
             actions: [
               IconButton(
-                onPressed: (){},
-                icon: Icon(Icons.search,),),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SearchScreen()),
+                  );
+                },
+                icon: Icon(Icons.search),
+              ),
               IconButton(
-                onPressed: ()
-                {
+                onPressed: () {
                   ThemeModeCubit.get(context).changeThemeMode();
                 },
-                icon: Icon(Icons.brightness_4_outlined,),),
+                icon: Icon(Icons.brightness_4_outlined),
+              ),
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
             items: cubit.items,
             currentIndex: cubit.currentIndex,
-            onTap: (index)
-            {
+            onTap: (index) {
               cubit.changeBottomNav(index);
             },
           ),

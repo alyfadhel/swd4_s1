@@ -4,6 +4,9 @@ import 'package:hexcolor/hexcolor.dart';
 
 ThemeData getDarkMode()=>ThemeData(
   appBarTheme: AppBarTheme(
+    iconTheme: IconThemeData(
+      color: Colors.white,
+    ),
     backgroundColor: HexColor('#1B2529',),
     titleSpacing: 20.0,
     titleTextStyle: TextStyle(
@@ -83,6 +86,9 @@ ThemeData getDarkMode()=>ThemeData(
 
 ThemeData getLightMode()=>ThemeData(
   appBarTheme: AppBarTheme(
+    iconTheme: IconThemeData(
+      color: Colors.black,
+    ),
     backgroundColor: Colors.white,
     titleSpacing: 20.0,
     titleTextStyle: TextStyle(
